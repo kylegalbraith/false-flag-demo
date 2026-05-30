@@ -76,6 +76,35 @@ against the compose stack. See `cmd/falseflag-mcp/README.md`.
 - Runtime SDKs and the evaluation proxy should consume static JSON/rules, not execute user-submitted TypeScript.
 - Use parallel subagents only when write scopes are clearly separate.
 
+## Depot CI Continuous Verification
+
+For code changes in this repo, use the `depot-ci` skill for the mechanics of continuous verification before committing, pushing, or reporting the work as complete. Let that skill decide the exact `depot ci` subcommands to use for running, inspecting status, reading logs, diagnosing, retrying, or debugging a run.
+
+Repo-specific Depot CI defaults:
+
+- Depot org: `d58mfwccbf`
+- GitHub repo: `Zagrit-HQ/false-flag-demo`
+- Main workflow: `.depot/workflows/ci.yml`
+- Fast validation workflow: `.depot/workflows/lint.yml`
+
+Always pass the org and repo explicitly when running Depot CI so the CLI does not choose the wrong account:
+
+```bash
+depot ci run --org d58mfwccbf --repo Zagrit-HQ/false-flag-demo --workflow .depot/workflows/ci.yml --job <job>
+```
+
+Choose the smallest relevant validation loop:
+
+- Eval engine, SDK behavior, or `tests/eval-corpus/**`: `conformance`
+- Go-only backend changes: `test-go`
+- TypeScript-only changes: `test-js` or `build-js`
+- Codegen, lint, OpenAPI, or typecheck changes: `.depot/workflows/lint.yml`
+- API/proxy/MCP runtime behavior: `smoke`
+- Dashboard browser behavior: `dashboard-e2e`
+- Docker/image changes: `build-images`
+
+If Depot CI cannot start because of auth, org, repo access, or network issues, report that blocker explicitly. Do not silently replace Depot CI with local-only checks.
+
 ## Inspiration Projects
 
 Reference material for this project lives outside this workspace at:
@@ -95,31 +124,3 @@ git -C /Users/wito/code/project-keat/keat-server blame <file>
 ```
 
 Do not edit files under `/Users/wito/code/project-keat` unless the user explicitly asks for changes there and grants the necessary workspace access.
-
-## Depot CI Continuous Verification
-
-For code changes in this repo, use the `depot-ci` skill and validate with Depot CI before committing or reporting the work as complete.
-
-Depot CI identity:
-
-- Depot org: `d58mfwccbf`
-- GitHub repo: `Zagrit-HQ/false-flag-demo`
-- Main workflow: `.depot/workflows/ci.yml`
-- Fast validation workflow: `.depot/workflows/lint.yml`
-
-Default loop:
-
-1. Choose the smallest relevant Depot CI validation loop for the change.
-2. Run it against the uncommitted local patch.
-3. Inspect status and logs if it fails.
-4. Fix the issue locally.
-5. Rerun only the failed or relevant job until green.
-6. Report the final green run ID.
-
-Use explicit org/repo flags so the CLI does not pick the wrong account:
-
-```bash
-depot ci run --org d58mfwccbf --repo Zagrit-HQ/false-flag-demo --workflow .depot/workflows/ci.yml --job <job>
-depot ci status <run-id>
-depot ci logs <run-id> --job <job>
-```
