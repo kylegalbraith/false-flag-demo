@@ -93,6 +93,8 @@ Always pass the org and repo explicitly when running Depot CI so the CLI does no
 depot ci run --org d58mfwccbf --repo Zagrit-HQ/false-flag-demo --workflow .depot/workflows/ci.yml --job <job>
 ```
 
+Before running Depot CI, check `git status --short`. If the validation depends on newly created files, stage those files first so Depot's uploaded patch includes them. Do not commit unless the user asked for a commit.
+
 Choose the smallest relevant validation loop:
 
 - Eval engine, SDK behavior, or `tests/eval-corpus/**`: `conformance`
