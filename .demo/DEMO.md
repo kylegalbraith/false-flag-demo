@@ -254,6 +254,7 @@ Commands to narrate if needed:
 
 ```bash
 depot ci status <run-id>
+depot ci diagnose --org d58mfwccbf --run <run-id>
 depot ci logs <run-id> --job conformance
 ```
 
@@ -396,6 +397,7 @@ Narrow local-patch runs:
 depot ci run --org d58mfwccbf --repo Zagrit-HQ/false-flag-demo --workflow .depot/workflows/lint.yml
 depot ci run --org d58mfwccbf --repo Zagrit-HQ/false-flag-demo --workflow .depot/workflows/ci.yml --job conformance
 depot ci status <run-id>
+depot ci diagnose --org d58mfwccbf --run <run-id>
 depot ci logs <run-id> --job conformance
 ```
 

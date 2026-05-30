@@ -107,7 +107,15 @@ Choose the smallest relevant validation loop:
 
 If Depot CI cannot start because of auth, org, repo access, or network issues, report that blocker explicitly. Do not silently replace Depot CI with local-only checks.
 
-If there is a failure in a Depot CI run, workflow, job, or attempt -- use the `depot ci diagnose` command to talk directly with a Depot CI agent about what the cause of the failure is.
+If a Depot CI run, workflow, job, or attempt fails, use `depot ci diagnose` before broad local debugging. The command takes explicit ID flags, not a bare positional ID:
+
+```bash
+depot ci diagnose --org d58mfwccbf --run <run-id>
+depot ci diagnose --org d58mfwccbf --job <job-id>
+depot ci diagnose --org d58mfwccbf --attempt <attempt-id>
+```
+
+Use the diagnosis to identify the likely cause, then fetch focused logs with `depot ci logs` only as needed and keep the fix scoped to the failing validation loop.
 
 ## Sandboxed agents and running local Go checks
 
