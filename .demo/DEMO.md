@@ -113,19 +113,25 @@ Do these before the call.
 
 **Talk track:**
 
-Agents do not need a prettier PR page. They need a fast way to prove their
-changes before they push. Traditional CI is push, wait, guess. Agentic CI is:
-run real validation on the local patch, read the result programmatically, fix,
-rerun, and push once green. All backed by a delivery pipeline that is exceptionally
-fast and reliable.
+The core shift is that agents make code generation cheap, but they make
+validation demand explode. If every agent-produced change has to go through the
+old loop of push, wait, read logs, copy context back, and push again, the team
+does not actually get faster.
+
+What agents need is a way to call the real delivery pipeline while they are
+working: run targeted CI against the local patch, inspect the result, fix what
+broke, rerun the same loop, and only push once the change is already green.
 
 Show:
 
 ```text
-Old loop:   edit -> push -> wait -> CI runs -> copy/paste errors out of CI back to agent (or have the agent pull them down by me telling them to)
--> agent fixes the code -> push again -> repeat until it finally works
-New loop: edit -> trigger real targeted CI for the changes introduced -> agent monitors CI by itself -> fixes anything is broken
--> runs again -> only pushes once the targeted change is green
+Old loop:
+edit -> push -> wait for CI -> move logs back into the agent context
+     -> agent fixes code -> push again -> repeat until green
+
+New loop:
+edit -> agent triggers targeted CI on the local patch -> agent reads status/logs
+     -> agent fixes code -> reruns the same loop -> push once green
 ```
 
 **Transition:**
