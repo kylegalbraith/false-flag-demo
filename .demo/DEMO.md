@@ -40,23 +40,22 @@ Lead with **static workflow, dynamic targeting**.
 
 The money shot is not "watch an agent write YAML." The money shot is:
 
-> An agent understands the change it made, chooses the smallest meaningful CI
-> loop, runs real CI against local uncommitted code, reads logs, fixes the code,
-> reruns, and only pushes once green.
+An agent understands the change it made, chooses the smallest meaningful CI
+loop, runs real CI against local uncommitted code, reads logs, fixes the code,
+reruns, and only pushes once green.
 
 Dynamic workflow generation is still worth mentioning, but as the next level:
 
-> Because Depot CI accepts workflow YAML and exposes CLI/API control, this can
-> be a checked-in workflow, a narrow job from the main workflow, or a workflow
-> an agent generates on the fly. The important thing is Depot gives agents a
-> fast, cache-backed, observable execution substrate.
+Because Depot CI accepts workflow YAML and exposes CLI/API control, this can be
+a checked-in workflow, a narrow job from the main workflow, or a workflow an
+agent generates on the fly. The important thing is Depot gives agents a fast,
+cache-backed, observable execution substrate.
 
 ## Pre-Call Prep
 
 Do these before the call.
 
 1. Confirm the repo instructions include the Depot CI defaults:
-
    - Depot org: `d58mfwccbf`
    - GitHub repo: `Zagrit-HQ/false-flag-demo`
    - Main workflow: `.depot/workflows/ci.yml`
@@ -94,7 +93,6 @@ Do these before the call.
    CLI output from an earlier run.
 
 6. Open tabs/windows:
-
    - Repo terminal at `/Users/kylegalbraith/projects/depot/false-flag-demo`
    - `.depot/workflows/lint.yml`
    - `.depot/workflows/ci.yml`
@@ -113,34 +111,37 @@ Do these before the call.
 
 ## 1. Set The Problem, 45 Seconds
 
-Say:
+**Talk track:**
 
-> Agents do not need a prettier PR page. They need a fast way to prove their
-> changes before they push. Traditional CI is push, wait, guess. Agentic CI is:
-> run real validation on the local patch, read the result programmatically, fix,
-> rerun, and push once green.
+Agents do not need a prettier PR page. They need a fast way to prove their
+changes before they push. Traditional CI is push, wait, guess. Agentic CI is:
+run real validation on the local patch, read the result programmatically, fix,
+rerun, and push once green. All backed by a delivery pipeline that is exceptionally
+fast and reliable.
 
 Show:
 
 ```text
-Old loop:   edit -> push -> wait -> read CI -> fix -> push again
-Agent loop: edit -> run CI locally -> read logs -> fix -> rerun -> push once green
+Old loop:   edit -> push -> wait -> CI runs -> copy/paste errors out of CI back to agent (or have the agent pull them down by me telling them to)
+-> agent fixes the code -> push again -> repeat until it finally works
+New loop: edit -> trigger real targeted CI for the changes introduced -> agent monitors CI by itself -> fixes anything is broken
+-> runs again -> only pushes once the targeted change is green
 ```
 
-Transition:
+**Transition:**
 
-> The question Battery is asking as "dynamic workflows" is really: can Depot
-> make validation callable, targeted, and fast enough that agents can use it as
-> an inner loop?
+The question Battery is asking as "dynamic workflows" is really: can Depot make
+validation callable, targeted, and fast enough that agents can use it as an
+inner loop?
 
 ## 2. Show The Repo Has Real CI Gravity, 60 Seconds
 
-Say:
+**Talk track:**
 
-> This is not a toy repo. FalseFlag is a synthetic feature flag platform with a
-> Go API, Remix dashboard, TypeScript SDK, Go SDK, Kubernetes operator, MCP
-> server, Hurl tests, Playwright tests, Docker images, Postgres and SQLite
-> backends, generated code, and conformance tests across runtimes.
+This is not a toy repo. FalseFlag is a synthetic feature flag platform with a
+Go API, Remix dashboard, TypeScript SDK, Go SDK, Kubernetes operator, MCP
+server, Hurl tests, Playwright tests, Docker images, Postgres and SQLite
+backends, generated code, and conformance tests across runtimes.
 
 Show the workflows:
 
@@ -154,11 +155,11 @@ Then show the jobs in the larger workflow:
 rg '^  [a-zA-Z0-9_-]+:' .depot/workflows/ci.yml
 ```
 
-Say:
+**Talk track:**
 
-> This is the kind of CI surface real customers accumulate: codegen, lint,
-> tests, race tests, contract tests, image builds, image scanning, smoke tests,
-> browser tests, and backend matrices.
+This is the kind of CI surface real customers accumulate: codegen, lint, tests,
+race tests, contract tests, image builds, image scanning, smoke tests, browser
+tests, and backend matrices.
 
 ## 3. Show The Optimized Validation Substrate, 90 Seconds
 
@@ -176,12 +177,15 @@ runs-on:
   image: d58mfwccbf.registry.depot.dev/falseflag-ci-base:go1.26-node22-pnpm10.13-pw1.49-spectral6.14-postgres16
 ```
 
-Say:
+**Talk track:**
 
-> This image snapshots the expensive setup: Go, Node, pnpm, Playwright,
-> Spectral, browser dependencies, and the base Postgres image. The agent does
-> not wait for dependency installation from scratch every time it wants
-> feedback.
+This how we leverage Depot Cache for customers inside of Depot CI.
+This snapshots the expensive setup: Go, Node, pnpm, Playwright, Spectral,
+browser dependencies, and the base Postgres image. The agent does not wait for
+dependency installation from scratch every time it wants feedback.
+
+The runner is automatically populated with this cache for anything the agent wants to validate.
+It just has to specify that it wants to run on this snapshot.
 
 Show parallel setup and validation in `.depot/workflows/lint.yml`:
 
@@ -200,11 +204,15 @@ parallel:
   - name: Lint OpenAPI
 ```
 
-Say:
+**Talk track:**
 
-> This is what I mean by dynamic validation loops. The workflow is structured so
-> independent checks can run together, and the agent can choose this loop
-> directly when the change calls for it.
+This is what I mean by dynamic validation loops. The workflow is structured so
+independent checks can run together, and the agent can choose this loop directly
+when the change calls for it.
+
+The same substrate also lets an agent learn from the checked-in validation loops,
+construct a bespoke workflow for a specific change, and have Depot CI execute it
+against the local patch.
 
 ## 4. Live Agentic Loop, 2-3 Minutes
 
@@ -215,60 +223,26 @@ Agent prompt to paste:
 ```text
 Use the depot-ci skill for continuous verification in this repo.
 
-Task: add a new `starts_with` string predicate to the FalseFlag targeting engine.
+Add a new `starts_with` string predicate to the FalseFlag targeting engine.
+Focus only on the Go implementation for now and only address other runtimes if
+Depot CI proves they fail.
 
-Important demo constraint: do this as a real CI-guided loop. Do not complete the
-whole cross-runtime implementation before the first Depot CI run.
-
-Phase 1:
-Implement only the Go/config side of `starts_with` and add one shared fixture
-under `tests/eval-corpus/**` that uses:
-
-- kind: `starts_with`
-- attr: `request.path`
-- value: `/api/`
-
-Do not edit any files under `js/**` in Phase 1.
-
-Then immediately run the smallest relevant Depot CI loop against the uncommitted
-local patch:
-
-depot ci run --org d58mfwccbf --repo Zagrit-HQ/false-flag-demo --workflow .depot/workflows/ci.yml --job conformance
-
-Use the depot-ci skill to inspect the run status and logs. The expected result
-is that the conformance job fails because the TypeScript SDK runtime does not
-yet understand `starts_with`.
-
-Phase 2:
-Only after seeing that Depot CI failure, fix the missing TypeScript SDK support
-under `js/packages/sdk-js/**`.
-
-Then rerun only the same targeted Depot CI job:
-
-depot ci run --org d58mfwccbf --repo Zagrit-HQ/false-flag-demo --workflow .depot/workflows/ci.yml --job conformance
-
-Stop when that job is green. Do not commit or push.
-
-Final report:
-- files changed
-- first failing Depot CI run ID
-- the log evidence that identified the missing TS runtime support
-- final green Depot CI run ID
+Make sure you add a shared fixture under `tests/eval-corpus/**`.
 ```
 
 Expected failure path:
 
-> The Go runtime learns `starts_with` first, but the TypeScript SDK evaluator
-> does not know it yet. The shared conformance job fails with a real
-> cross-runtime mismatch. The agent reads the logs, adds the TypeScript twin,
-> and reruns only `conformance`.
+The Go runtime learns `starts_with` first, but the TypeScript SDK evaluator does
+not know it yet. The shared conformance job fails with a real cross-runtime
+mismatch. The agent reads the logs, adds the TypeScript twin, and reruns only
+`conformance`.
 
-Say while it runs:
+**Talk track while it runs:**
 
-> No commit. No PR. Depot detects the local diff, uploads a patch, applies it
-> after checkout, and runs the real workflow remotely. That is the core unlock
-> for agents: they can validate work before polluting the branch or waiting on
-> GitHub events.
+No commit. No PR. Depot detects the local diff, uploads a patch, applies it
+after checkout, and runs the real workflow remotely. That is the core unlock for
+agents: they can validate work before polluting the branch or waiting on GitHub
+events.
 
 Commands to narrate if needed:
 
@@ -277,10 +251,14 @@ depot ci status <run-id>
 depot ci logs <run-id> --job conformance
 ```
 
-Close the beat:
+**Close the beat:**
 
-> The important part is not that a human clicked rerun. The important part is
-> that this is all CLI/API-driven, so an agent can own the loop.
+The important part is not that a human clicked rerun. The important part is that
+this is all CLI/API-driven, so an agent can own the loop.
+
+All of the products of Depot are just running in the background making this pipeline
+orders of magnitude faster. So the agent can write the code, get validation, turn CI green,
+and then push the code.
 
 ## 5. Show The Full Pipeline Without Waiting Live, 90 Seconds
 
@@ -296,12 +274,12 @@ Show these pieces:
 - `dashboard-e2e` is sharded across 6 shards and runs against the saved images.
 - `contract-test`, `smoke`, and `dashboard-e2e` run across Postgres and SQLite.
 
-Say:
+**Talk track:**
 
-> The live loop is narrow because agents need fast feedback. The full confidence
-> loop is broader: images, smoke tests, browser tests, matrices. Depot connects
-> the pieces underneath: cached container builds, registry handoff, CI
-> orchestration, logs, metrics, and status.
+The live loop is narrow because agents need fast feedback. The full confidence
+loop is broader: images, smoke tests, browser tests, matrices. Depot connects
+the pieces underneath: faster container builds baked in, registry integration out of the box,
+CI orchestration, logs, metrics, and status.
 
 Useful snippets to show:
 
@@ -324,45 +302,59 @@ matrix:
 
 ## 6. Answer "How Is This Different?", 60 Seconds
 
-Say:
+**Talk track:**
 
-> GitHub Actions, Circle, and Buildkite are mostly human-paced CI systems:
-> push a commit, wait for an event, inspect a UI. Depot CI is programmable CI
-> for engineers and agents: run against local patches, scope to jobs, fetch
-> logs, SSH into sandboxes, use custom images, parallelize steps, and pay by the
-> second.
+The old CI model assumes humans are the scarce resource. A human writes code,
+pushes a branch, waits for CI, reads the logs, and decides what to do next. That
+model is already painful for teams, but it breaks completely when agents start
+producing many more candidate changes.
 
-Then add:
+In an agentic world, the bottleneck moves from writing code to validating code.
+The winning CI platform is the one agents can call continuously while they work.
 
-> And it is not one isolated feature. It is Depot CI, Depot Cache, Depot
-> Registry, Depot Container Builds, logs, metrics, and CLI/API control all
-> connecting under the hood. That is what makes short targeted validation loops
-> practical at agent scale.
+That is the difference with Depot. Depot CI is not just a faster place to run a
+push-triggered workflow. It is a programmable validation substrate.
 
-If they ask specifically about dynamic workflows:
+**Then add:**
 
-> There are three levels. Level one is a static workflow with dynamic targeting:
-> the agent picks `conformance`, `lint`, or `smoke` based on the change. Level
-> two is a static workflow with dynamic subsets and matrices. Level three is an
-> agent-generated workflow when the repo does not already express the needed
-> check. Depot supports the substrate for all three, but the most credible demo
-> is level one because it is useful immediately.
+The advantage compounds across the product surface. Depot CI handles the
+orchestration, runner performance, and workflow plumbing with very little
+dependency on GitHub. Depot Cache is plugged directly into the execution
+environment, so cached results are available to the next runner automatically.
+Depot Registry gives each validation loop fast access to the images and
+environment snapshots produced by earlier runs.
+
+That means the entire validation loop can be driven independently by agents
+inside their existing workflow. They do not have to test something locally,
+discover CI behaves differently, copy logs between tools, or wait for a
+push-triggered system to tell them what broke. The agent can run the same CI
+environment it will be judged by, inspect the result, fix the code, and rerun
+the targeted loop immediately.
+
+**If they ask specifically about dynamic workflows:**
+
+There are three levels. Level one is a static workflow with dynamic targeting:
+the agent picks `conformance`, `lint`, or `smoke` based on the change. Level two
+is a static workflow with dynamic subsets and matrices. Level three is an
+agent-generated workflow when the repo does not already express the needed
+check. Depot supports the substrate for all three, but the most credible demo is
+level one because it is useful immediately.
 
 ## 7. Close With The Series B Story, 45 Seconds
 
-Say:
+**Talk track:**
 
-> The bigger market shift is that validation volume explodes when agents are
-> writing code. The winning CI platform is no longer just the one with faster
-> runners. It is the one agents can use as infrastructure: fast startup,
-> cache-backed, API-driven, observable, debuggable, and cheap enough to call
-> constantly.
+The bigger market shift is that validation volume explodes when agents are
+writing code. The winning CI platform is no longer just the one with faster
+runners. It is the one agents can use as infrastructure: fast startup,
+cache-backed, API-driven, observable, debuggable, and cheap enough to call
+constantly.
 
-Then:
+**Then:**
 
-> That is the wedge. Depot starts as acceleration for builds and CI, but in an
-> agentic world it becomes the validation substrate that lets code-writing
-> agents ship safely.
+That is the wedge. Depot starts as acceleration for builds and CI, but in an
+agentic world it becomes the validation substrate that lets code-writing agents
+ship safely.
 
 ## Optional Product Context: FalseFlag In 90 Seconds
 
@@ -373,11 +365,11 @@ docker compose ps
 open http://localhost:3030/projects
 ```
 
-Say:
+**Talk track:**
 
-> This is FalseFlag, a believable feature flag platform built specifically to
-> create real CI gravity: API, dashboard, SDKs, proxy, operator, MCP server, and
-> multiple config strategies.
+This is FalseFlag, a believable feature flag platform built specifically to
+create real CI gravity: API, dashboard, SDKs, proxy, operator, MCP server, and
+multiple config strategies.
 
 Click:
 
@@ -385,10 +377,10 @@ Click:
 acme-internal -> feature-x -> Edit
 ```
 
-Say:
+**Talk track:**
 
-> The product is demo-quality, but the CI load is real. That is the point:
-> Depot is not being shown against a toy hello-world repo.
+The product is demo-quality, but the CI load is real. That is the point: Depot
+is not being shown against a toy hello-world repo.
 
 ## Commands Cheat Sheet
 
