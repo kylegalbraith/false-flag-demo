@@ -53,14 +53,14 @@ Code generation and CI:
 
 The compose stack uses the following ports; keep new binaries on a contiguous range.
 
-| Service | Ports | Notes |
-|---|---|---|
-| api | 8080, 8090 | REST + ConnectRPC |
-| proxy | 8081 | Local snapshot evaluation |
-| operator | 8082, 8083 | Metrics + health probe |
-| mcp | 8091, 8092 | Streamable HTTP MCP surface + `/healthz` |
-| dashboard | 3000 | Remix SSR |
-| db | 5432 | Postgres |
+| Service   | Ports      | Notes                                    |
+| --------- | ---------- | ---------------------------------------- |
+| api       | 8080, 8090 | REST + ConnectRPC                        |
+| proxy     | 8081       | Local snapshot evaluation                |
+| operator  | 8082, 8083 | Metrics + health probe                   |
+| mcp       | 8091, 8092 | Streamable HTTP MCP surface + `/healthz` |
+| dashboard | 3000       | Remix SSR                                |
+| db        | 5432       | Postgres                                 |
 
 `cmd/falseflag-mcp` exposes six agent-facing tools — `list_projects`,
 `list_flags`, `get_flag`, `validate_config`, `explain_evaluation`,
@@ -95,3 +95,31 @@ git -C /Users/wito/code/project-keat/keat-server blame <file>
 ```
 
 Do not edit files under `/Users/wito/code/project-keat` unless the user explicitly asks for changes there and grants the necessary workspace access.
+
+## Depot CI Continuous Verification
+
+For code changes in this repo, use the `depot-ci` skill and validate with Depot CI before committing or reporting the work as complete.
+
+Depot CI identity:
+
+- Depot org: `d58mfwccbf`
+- GitHub repo: `Zagrit-HQ/false-flag-demo`
+- Main workflow: `.depot/workflows/ci.yml`
+- Fast validation workflow: `.depot/workflows/lint.yml`
+
+Default loop:
+
+1. Choose the smallest relevant Depot CI validation loop for the change.
+2. Run it against the uncommitted local patch.
+3. Inspect status and logs if it fails.
+4. Fix the issue locally.
+5. Rerun only the failed or relevant job until green.
+6. Report the final green run ID.
+
+Use explicit org/repo flags so the CLI does not pick the wrong account:
+
+```bash
+depot ci run --org d58mfwccbf --repo Zagrit-HQ/false-flag-demo --workflow .depot/workflows/ci.yml --job <job>
+depot ci status <run-id>
+depot ci logs <run-id> --job <job>
+```
