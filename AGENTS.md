@@ -107,6 +107,15 @@ Choose the smallest relevant validation loop:
 
 If Depot CI cannot start because of auth, org, repo access, or network issues, report that blocker explicitly. Do not silently replace Depot CI with local-only checks.
 
+If there is a failure in a Depot CI run, workflow, job, or attempt -- use the `depot ci diagnose` command to talk directly with a Depot CI agent about what the cause of the failure is.
+
+## Sandboxed agents and running local Go checks
+
+When running local Go checks from a sandboxed agent, use a workspace-local Go
+cache to avoid host cache permission noise:
+
+GOCACHE=$(pwd)/.gocache go test ./internal/config ./internal/eval
+
 ## Inspiration Projects
 
 Reference material for this project lives outside this workspace at:
