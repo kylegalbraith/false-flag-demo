@@ -42,20 +42,21 @@ type Rule struct {
 type PredicateKind string
 
 const (
-	PredEq      PredicateKind = "eq"
-	PredNeq     PredicateKind = "neq"
-	PredIn      PredicateKind = "in"
-	PredGt      PredicateKind = "gt"
-	PredGte     PredicateKind = "gte"
-	PredLt      PredicateKind = "lt"
-	PredLte     PredicateKind = "lte"
-	PredMatches PredicateKind = "matches"
-	PredRollout PredicateKind = "rollout"
-	PredAll     PredicateKind = "all"
-	PredAny     PredicateKind = "any"
-	PredNot     PredicateKind = "not"
-	PredCEL     PredicateKind = "cel"
-	PredAlways  PredicateKind = "always"
+	PredEq         PredicateKind = "eq"
+	PredNeq        PredicateKind = "neq"
+	PredIn         PredicateKind = "in"
+	PredGt         PredicateKind = "gt"
+	PredGte        PredicateKind = "gte"
+	PredLt         PredicateKind = "lt"
+	PredLte        PredicateKind = "lte"
+	PredMatches    PredicateKind = "matches"
+	PredStartsWith PredicateKind = "starts_with"
+	PredRollout    PredicateKind = "rollout"
+	PredAll        PredicateKind = "all"
+	PredAny        PredicateKind = "any"
+	PredNot        PredicateKind = "not"
+	PredCEL        PredicateKind = "cel"
+	PredAlways     PredicateKind = "always"
 	// PredSegment is a reference predicate. The handler resolves it
 	// against the project's stored segments before Compile runs; the
 	// kind never appears in the persisted IR.
@@ -69,7 +70,7 @@ const (
 type Predicate struct {
 	Kind PredicateKind `json:"kind"`
 
-	// Comparison predicates: eq, neq, gt, gte, lt, lte, matches
+	// Comparison predicates: eq, neq, gt, gte, lt, lte, matches, starts_with
 	Attr  string          `json:"attr,omitempty"`
 	Value json.RawMessage `json:"value,omitempty"`
 

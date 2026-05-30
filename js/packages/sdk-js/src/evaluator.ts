@@ -96,6 +96,8 @@ function match(
       return cmpOrd(p, ctx);
     case "matches":
       return cmpMatches(p, ctx);
+    case "starts_with":
+      return cmpStartsWith(p, ctx);
     case "rollout": {
       const v = lookupString(ctx, p.attr ?? "");
       if (v === undefined) return false;
@@ -157,6 +159,12 @@ function cmpMatches(p: Predicate, ctx: Record<string, unknown>): boolean {
   } catch {
     return false;
   }
+}
+
+function cmpStartsWith(p: Predicate, ctx: Record<string, unknown>): boolean {
+  const actual = lookupString(ctx, p.attr ?? "");
+  if (actual === undefined || typeof p.value !== "string") return false;
+  return actual.startsWith(p.value);
 }
 
 function lookup(ctx: Record<string, unknown>, path: string): unknown {

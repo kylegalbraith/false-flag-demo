@@ -64,7 +64,7 @@ func validatePredicate(p *Predicate, allowCEL bool) error {
 		return fmt.Errorf("%w: nil predicate", ErrInvalidPredicate)
 	}
 	switch p.Kind {
-	case PredEq, PredNeq, PredGt, PredGte, PredLt, PredLte:
+	case PredEq, PredNeq, PredGt, PredGte, PredLt, PredLte, PredStartsWith:
 		if p.Attr == "" {
 			return fmt.Errorf("%w: %s missing attr", ErrInvalidPredicate, p.Kind)
 		}

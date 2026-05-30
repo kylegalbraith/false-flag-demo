@@ -1,0 +1,18 @@
+{
+  "id": "starts-with-request-path",
+  "description": "String prefix operator on request.path matches API traffic.",
+  "strategy": "json",
+  "ir": {
+    "value_type": "boolean",
+    "default": false,
+    "rules": [
+      {
+        "id": "api-path",
+        "when": { "kind": "starts_with", "attr": "request.path", "value": "/api/" },
+        "value": true
+      }
+    ]
+  },
+  "context": { "request": { "path": "/api/projects/falseflag/flags" } },
+  "expected": { "value": true, "reason": "rule_matched", "rule_id": "api-path" }
+}
