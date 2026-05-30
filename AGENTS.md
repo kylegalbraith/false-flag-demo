@@ -117,6 +117,26 @@ depot ci diagnose --org d58mfwccbf --attempt <attempt-id>
 
 Use the diagnosis to identify the likely cause, then fetch focused logs with `depot ci logs` only as needed and keep the fix scoped to the failing validation loop.
 
+After the targeted loop is green, run the broader relevant Depot CI coverage
+before reporting the work as complete. The targeted job is for fast iteration;
+the broader run is for confidence.
+
+Use judgment based on the files changed:
+
+- Eval engine or shared corpus changes: rerun `conformance`, then run `test-go`
+  and `test-js` if both Go and TS code changed.
+- API/proxy/MCP runtime changes: run the targeted job first, then `smoke`.
+- Dashboard behavior changes: run the targeted JS job first, then
+  `dashboard-e2e`.
+- Docker or workflow changes: run `build-images` and any downstream job that
+  consumes those images.
+- Codegen/schema changes: run `.depot/workflows/lint.yml`, then the affected
+  build/test jobs.
+
+Keep the broader run scoped to the code change. Do not blindly run the entire
+pipeline for every small edit unless the change touches shared contracts,
+workflow definitions, generated code, or release/build plumbing.
+
 ## Sandboxed agents and running local Go checks
 
 When running local Go checks from a sandboxed agent, use a workspace-local Go
