@@ -307,17 +307,19 @@ matrix:
   shard: [1, 2, 3, 4, 5, 6]
 ```
 
+## DO THIS SECTION AS CLOSING
+
 ## 6. Answer "How Is This Different?", 60 Seconds
 
 **Talk track:**
 
-The old CI model assumes humans are the scarce resource. A human writes code,
+The old delivery infrastructure model assumes humans are the scarce resource. A human writes code,
 pushes a branch, waits for CI, reads the logs, and decides what to do next. That
 model is already painful for teams, but it breaks completely when agents start
 producing many more candidate changes.
 
 In an agentic world, the bottleneck moves from writing code to validating code.
-The winning CI platform is the one agents can call continuously while they work.
+The winning delivery infrastructure platform is the one agents can call continuously while they work.
 
 That is the difference with Depot. Depot CI is not just a faster place to run a
 push-triggered workflow. It is a programmable validation substrate.
@@ -333,7 +335,7 @@ environment snapshots produced by earlier runs.
 
 That means the entire validation loop can be driven independently by agents
 inside their existing workflow. They do not have to test something locally,
-discover CI behaves differently, copy logs between tools, or wait for a
+discover CI behaves differently, have an engineer copy logs between tools, or wait for a
 push-triggered system to tell them what broke. The agent can run the same CI
 environment it will be judged by, inspect the result, fix the code, and rerun
 the targeted loop immediately.
@@ -344,8 +346,17 @@ There are three levels. Level one is a static workflow with dynamic targeting:
 the agent picks `conformance`, `lint`, or `smoke` based on the change. Level two
 is a static workflow with dynamic subsets and matrices. Level three is an
 agent-generated workflow when the repo does not already express the needed
-check. Depot supports the substrate for all three, but the most credible demo is
-level one because it is useful immediately.
+check. Depot supports all three of these.
+
+## Future looking: agent written validation expansion
+
+We intend to expand the functionality across Depot CI to make things even more
+generic and accessible to agents so that they can write & execute their own
+validation workflows, however they want to express them, via this same interface.
+
+We've already solved the hardest part of that problem by having this validation
+engine being directly integrated with all of the other Depot components in our
+specialized delivery execution layer.
 
 ## 7. Close With The Series B Story, 45 Seconds
 
@@ -362,32 +373,6 @@ constantly.
 That is the wedge. Depot starts as acceleration for builds and CI, but in an
 agentic world it becomes the validation substrate that lets code-writing agents
 ship safely.
-
-## Optional Product Context: FalseFlag In 90 Seconds
-
-Use this only if they want to see the app before the CI loop.
-
-```bash
-docker compose ps
-open http://localhost:3030/projects
-```
-
-**Talk track:**
-
-This is FalseFlag, a believable feature flag platform built specifically to
-create real CI gravity: API, dashboard, SDKs, proxy, operator, MCP server, and
-multiple config strategies.
-
-Click:
-
-```text
-acme-internal -> feature-x -> Edit
-```
-
-**Talk track:**
-
-The product is demo-quality, but the CI load is real. That is the point: Depot
-is not being shown against a toy hello-world repo.
 
 ## Commands Cheat Sheet
 
