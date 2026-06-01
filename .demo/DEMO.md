@@ -6,29 +6,13 @@ loops" concrete without overclaiming magic.
 
 ## Opening
 
-Historically CI was a human-paced loop:
-
-```text
-edit -> push -> wait -> read CI -> fix -> push again
-```
-
-Agentic development breaks that model. Agents can generate code faster than
-traditional CI can validate it, so CI has to become a callable validation
-substrate:
-
-```text
-edit -> run real CI on local patch -> read logs -> fix -> rerun -> push once green
-```
-
-Depot CI is not just faster runners. The differentiation is the stack working
-together:
+The differentiation is the stack we have built for software delivery on Depot working together:
 
 - Depot CI for orchestration.
 - Depot Cache for incremental rebuilds and tests.
 - Depot Registry for fast artifact handoff between jobs.
 - Depot Container Builds for native, cached image builds.
 - CLI/API/logs/status/SSH for agents and engineers to drive the loop directly.
-- Per-second economics that make many short validation loops practical.
 
 That combination enables targeted feedback loops for agents, whether they call
 static workflows, select a narrow job from a larger workflow, or generate a
@@ -75,12 +59,6 @@ Show the workflows:
 
 ```bash
 ls .depot/workflows
-```
-
-Then show the jobs in the larger workflow:
-
-```bash
-rg '^  [a-zA-Z0-9_-]+:' .depot/workflows/ci.yml
 ```
 
 ## 3. Show The Optimized Validation Substrate, 90 Seconds
@@ -153,8 +131,6 @@ This is the centerpiece. Use one prompt that forces a real CI-guided loop.
 Agent prompt to paste:
 
 ```text
-Use the depot-ci skill for continuous verification in this repo.
-
 Add a new `starts_with` string predicate to the FalseFlag targeting engine.
 Focus only on the Go implementation for now and only address other runtimes if
 Depot CI proves they fail.
