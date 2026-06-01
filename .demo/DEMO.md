@@ -147,12 +147,9 @@ mismatch. The agent reads the logs, adds the TypeScript twin, and reruns only
 
 **Talk track while it runs:**
 
-What we are seeing here is Codex really taking our prompt, building out the necessary changes, and then there is no commit or pull request. Instead the agent and use Depot to validate it's changes in real-time using Depot CI.
+What we are seeing here is Codex really taking our prompt, building out the necessary changes, and then there is no commit or pull request. Instead the agent can use Depot to validate it's changes in real-time using Depot CI.
 
-Depot detects the local diff, uploads a patch, applies it after checkout, and runs the real workflow remotely. That is the core unlock for agents: they can validate work before polluting the branch or waiting on GitHub events.
-
-This validation loop is automatically connected into all of the other Depot products
-like Depot Cache, Depot Registry, and Depot Container Builds.
+Depot detects the local diff, uploads a patch, applies it after checkout, and runs the real workflow remotely. This validation loop is automatically connected into all of the other Depot products like Depot Cache, Depot Registry, and Depot Container Builds.
 
 Commands to narrate if needed:
 
@@ -168,46 +165,6 @@ The key thing here is that an agent is able to drive the entire delivery pipelin
 
 All of the products of Depot are just running in the background making this pipeline
 orders of magnitude faster. So the agent can write the code, get validation, turn CI green, and then push the code.
-
-## 5. Show The Full Pipeline Without Waiting Live, 90 Seconds
-
-Open `.depot/workflows/ci.yml` and `.depot/workflows/build.yml`, or switch to a
-Depot dashboard run.
-
-Show these pieces:
-
-- `build-images` calls `.depot/workflows/build.yml`.
-- `build.yml` uses `depot/bake-action`.
-- Images are saved and handed to downstream jobs.
-- `smoke` pulls `api`, `proxy`, and `mcp` images via `depot/pull-action`.
-- `dashboard-e2e` is sharded across 6 shards and runs against the saved images.
-- `contract-test`, `smoke`, and `dashboard-e2e` run across Postgres and SQLite.
-
-**Talk track:**
-
-The live loop is narrow because agents need fast feedback. The full confidence
-loop is broader: images, smoke tests, browser tests, matrices. Depot connects
-the pieces underneath: faster container builds baked in, registry integration out of the box,
-CI orchestration, logs, metrics, and status.
-
-Useful snippets to show:
-
-```yaml
-uses: depot/bake-action@v1
-```
-
-```yaml
-uses: depot/pull-action@v1
-with:
-  build-id: ${{ needs.build-images.outputs.build-id }}
-  targets: api,proxy,mcp
-```
-
-```yaml
-matrix:
-  backend: [postgres, sqlite]
-  shard: [1, 2, 3, 4, 5, 6]
-```
 
 ## DO THIS SECTION AS CLOSING
 
@@ -231,7 +188,7 @@ push-triggered workflow. It is a programmable validation engine.
 Ultimately, Depot is building the software delivery infrastructure we need for this
 new world of software engineering. A robust, comprehensive, highly reliable delivery
 infrastructure layer. CI providers of old are just workflow orchestration, which Depot
-also provides, but Depot also extend into distributed caching, integrations with tooling that customer already use, all the way down to kernel-level filesystem technology. This is all in service of making everything in the delivery stack fast and reliable to meet the demands of this new found code velocity.
+also provides, but Depot also extends into distributed caching, integrations with tooling that customer already use, all the way down to kernel-level filesystem technology. This is all in service of making everything in the delivery stack fast and reliable to meet the demands of this new found code velocity.
 
 **Then add:**
 
